@@ -1,28 +1,34 @@
 // src/lib/trainSim.js
-import { jst, minutesUntilJST } from "./time";
+import { minutesUntilJST } from "./time";
 
-// Generate fake trains for both departures + arrivals
-export function generateTrains(count = 12, startHour = 20) {
+/**
+ * Generate fake trains for arrivals & departures
+ */
+export function generateTrains(count = 12, startHour = 6) {
   const trains = [];
-  const now = new Date(
-    new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" })
-  );
+  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+  let current = new Date(now);
+  current.setHours(startHour, 0, 0, 0);
 
   for (let i = 0; i < count; i++) {
-    const hh = startHour + Math.floor(i / 6); // spread across hours
-    const mm = (i % 6) * 10; // every 10 minutes
-    const eta = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
-
-    // scheduled time as Date in JST
-    const sched = new Date(now);
-    sched.setHours(hh, mm, 0, 0);
+    // stagger each train randomly between 2–15 minutes after the last
+    const gap = 2 + Math.floor(Math.random() * 14); // minutes
+    current = new Date(current.getTime() + gap * 60000);
 
     // random delay up to 5 minutes
     const delayMin = Math.random() < 0.2 ? Math.floor(Math.random() * 6) : 0;
-    const delayedEpoch = sched.getTime() + delayMin * 60000;
+    const delayedEpoch = current.getTime() + delayMin * 60000;
+
+    // civilian (12h) format
+    const eta = current.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+      timeZone: "Asia/Tokyo",
+    });
 
     trains.push({
-      id: `G-${i}`,
+      id: `T-${i}`,
       line: "銀座線 / Ginza Line",
       lineCode: "G",
       destinationJP: "浅草",
@@ -32,7 +38,14 @@ export function generateTrains(count = 12, startHour = 20) {
       delayedEpoch,
       delayMin,
       status: delayMin > 0 ? `Delayed +${delayMin}m` : "On time",
-      minutesAway: minutesUntilJST(eta) + delayMin,
+      minutesAway: minutesUntilJST(
+        current.toLocaleTimeString("ja-JP", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+          timeZone: "Asia/Tokyo",
+        })
+      ) + delayMin,
     });
   }
 
