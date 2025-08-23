@@ -1,0 +1,17 @@
+{
+  "railway": "TokyoMetro.Ginza",
+  "station": "Shibuya",
+  "platform": 2,
+  "direction": "Asakusa",
+  "lineCode": "G",
+  "lineNameJP": "銀座線",
+  "lineNameEN": "Ginza Line",
+
+  "headways": [
+    { "start": "05:00", "end": "06:00", "everyMin": 10, "destJP": "浅草", "destEN": "Asakusa" },
+    { "start": "06:10", "end": "09:59", "everyMin": 5,  "destJP": "浅草", "destEN": "Asakusa" },
+    { "start": "10:00", "end": "16:59", "everyMin": 7,  "destJP": "浅草", "destEN": "Asakusa" },
+    { "start": "17:00", "end": "19:59", "everyMin": 5,  "destJP": "浅草", "destEN": "Asakusa" },
+    { "start": "20:00", "end": "23:30", "everyMin": 10, "destJP": "浅草", "destEN": "Asakusa" }
+  ]
+}

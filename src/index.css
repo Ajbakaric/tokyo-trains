@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* === Cyberpunk tokens === */
+@theme {
+  --color-bg: #000000;
+  --color-panel: #0F0F10;
+  --color-outline: #3A3F2B;
+  --color-neon: #FFD300;
+  --color-neon-cyan: #00D1FF;
+  --color-magenta: #FF00A8;
+  --color-text: #E6E6E6;
+  --color-subtext: #A0A0A0;
+
+  --font-sans: "Noto Sans JP", system-ui, sans-serif;
+  --font-display: "Orbitron", ui-sans-serif, system-ui;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular;
+
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.25rem;
+
+  --shadow-neon: 0 0 8px #FFD300, 0 0 18px rgba(255,211,0,.35);
+  --shadow-innerhud: inset 0 0 12px rgba(0,209,255,.15);
+}
+
+/* Canvas + HUD grid */
+html,body,#root{height:100%}
+body{background:var(--color-bg); color:var(--color-text);}
+
+.hud-grid{ position: relative; }
+.hud-grid::before{
+  content:""; position:fixed; inset:0; pointer-events:none; opacity:.15;
+  background:
+   linear-gradient(to right, rgba(0,209,255,.06) 1px, transparent 1px),
+   linear-gradient(to bottom, rgba(0,209,255,.06) 1px, transparent 1px);
+  background-size: 40px 40px, 40px 40px;
+}
+.hud-grid::after{
+  content:""; position:fixed; inset:0; pointer-events:none; opacity:.08;
+  background:
+   linear-gradient(to right, rgba(0,209,255,.04) 1px, transparent 1px),
+   linear-gradient(to bottom, rgba(0,209,255,.04) 1px, transparent 1px);
+  background-size: 8px 8px, 8px 8px;
+}
+.neon-text{ text-shadow: var(--shadow-neon); }
+.card{
+  background: color-mix(in oklab, var(--color-panel) 92%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-outline) 85%, transparent);
+  box-shadow: var(--shadow-innerhud);
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+}
+@keyframes pulseNeon {
+  0%,100% { text-shadow: var(--shadow-neon); }
+  50%     { text-shadow: 0 0 2px var(--color-neon); }
+}
+
+/* Only used when motion is allowed */
+.pulse-neon { animation: pulseNeon 1.2s ease-in-out infinite; }
+
+.dim-cancelled { opacity: .45; filter: grayscale(.1); }
