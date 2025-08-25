@@ -4,17 +4,12 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function TrainBoard({ trains, type = "arrivals", setTrains }) {
   if (!Array.isArray(trains) || trains.length === 0) {
-    return (
-      <div className="text-subtext text-sm text-center my-6">
-        No upcoming {type}.
-      </div>
-    );
+    return <div className="text-subtext text-sm text-center my-6">No upcoming {type}.</div>;
   }
-
   const canMutate = typeof setTrains === "function";
 
   function handleLeave(id) {
-    if (!canMutate) return;               // 👈 guard: only mutate when a setter is provided
+    if (!canMutate) return;
     setTrains(prev => prev.filter(t => t.id !== id));
   }
 
@@ -29,14 +24,15 @@ export default function TrainBoard({ trains, type = "arrivals", setTrains }) {
         {trains.map(t => (
           <motion.li
             key={t.id}
-            initial={{ opacity: 0, x: 80 }}    // 👈 phase in from right
+            initial={{ opacity: 0, x: 80 }}   // phase in from right
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -80 }}      // 👈 phase out to left
+            exit={{ opacity: 0, x: -80 }}     // phase out to left
             transition={{ duration: 0.4, ease: "easeInOut" }}
           >
             <ArrivalCard
               item={t}
-              onLeave={canMutate ? handleLeave : undefined}  // 👈 only pass onLeave when setter exists
+              onLeave={canMutate ? handleLeave : undefined}
+              context={type}                   // <- controls which icon to show
             />
           </motion.li>
         ))}
