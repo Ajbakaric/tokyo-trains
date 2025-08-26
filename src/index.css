@@ -22,11 +22,22 @@
   --shadow-innerhud: inset 0 0 12px rgba(0,209,255,.15);
 }
 
-/* Canvas + HUD grid */
-html,body,#root{height:100%}
-body{background:var(--color-bg); color:var(--color-text);}
+/* -------- Base / layout -------- */
+html, body, #root { height: 100%; }
 
-.hud-grid{ position: relative; }
+/* IMPORTANT: body is transparent so Spline can show through */
+body {
+  background: transparent;          /* <- was solid */
+  color: var(--color-text);
+}
+
+/* Fallback behind transparent body so you don't see white */
+html, #root {
+  background: #000;                 /* <- fixes gray/white wash */
+}
+
+/* HUD grid with blueprint overlay */
+.hud-grid { position: relative; }
 .hud-grid::before{
   content:""; position:fixed; inset:0; pointer-events:none; opacity:.15;
   background:
@@ -41,20 +52,70 @@ body{background:var(--color-bg); color:var(--color-text);}
    linear-gradient(to bottom, rgba(0,209,255,.04) 1px, transparent 1px);
   background-size: 8px 8px, 8px 8px;
 }
+
+/* Neon helpers & card */
 .neon-text{ text-shadow: var(--shadow-neon); }
+
 .card{
-  background: color-mix(in oklab, var(--color-panel) 92%, transparent);
+  background: color-mix(in oklab, var(--color-panel) 100%, transparent);
   border: 1px solid color-mix(in oklab, var(--color-outline) 85%, transparent);
   box-shadow: var(--shadow-innerhud);
   border-radius: 20px;
   backdrop-filter: blur(4px);
 }
+
+/* Pulse utility */
 @keyframes pulseNeon {
   0%,100% { text-shadow: var(--shadow-neon); }
   50%     { text-shadow: 0 0 2px var(--color-neon); }
 }
-
-/* Only used when motion is allowed */
 .pulse-neon { animation: pulseNeon 1.2s ease-in-out infinite; }
 
 .dim-cancelled { opacity: .45; filter: grayscale(.1); }
+
+/* -------- Hero (Spline) -------- */
+
+/* Correct clamp order: min, preferred, max */
+:root { --hero-h: clamp(220px, 28vh, 360px); }
+
+/* --- Hero (Spline) --- */
+.hero-spline {
+  position: sticky;          /* stays at the top while you scroll */
+  top: 0;
+  z-index: 0;                /* keep it behind the UI bar & cards */
+  height: clamp(560px, 35vh, 560px); /* was using an inverted clamp */
+  border-bottom: 6px solid var(--color-outline);
+  background: transparent;   /* was black */
+  overflow: hidden;
+}
+
+.hero-spline iframe,
+.hero-spline canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: transparent !important; /* belt-and-suspenders */
+}
+
+/* subtle scanline/halo overlay on top of the 3D */
+.hero-fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(0,209,255,.08), transparent 55%),
+    radial-gradient(60% 60% at 50% 0%, rgba(255,0,168,.12), transparent 70%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.05), rgba(255,255,255,.05) 1px, transparent 2px, transparent 6px);
+  mix-blend-mode: screen;
+  opacity: .5;
+}
+
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  padding-bottom: 18px;
+  pointer-events: none;
+}
