@@ -1,150 +1,94 @@
-// src/components/ArrivalCard.jsx
 import { motion } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import boardingIcon from "../assets/boarding.png";
 import departuresIcon from "../assets/departures.png";
 
-export default function ArrivalCard({
-  item,
-  onLeave,
-  context = "arrivals", // "arrivals" | "boarding" | "departures"
-  lang = "en",
-}) {
-  const [timeLeft, setTimeLeft] = useState(() => getTimeLeft(item.delayedEpoch));
+export default function ArrivalCard({ item, onLeave, context = "arrivals" }) {
+  const [tl, setTl] = useState(getTimeLeft(item.delayedEpoch));
   const [leaving, setLeaving] = useState(false);
-  const timeoutRef = useRef(null);
 
-  // live HH:MM:SS countdown + leaving-after-5s
+  // Live countdown
   useEffect(() => {
     const id = setInterval(() => {
-      const left = getTimeLeft(item.delayedEpoch);
-      setTimeLeft(left);
+      const next = getTimeLeft(item.delayedEpoch);
+      setTl(next);
 
-      const atZero = left.hours === 0 && left.minutes === 0 && left.seconds === 0;
-      if (!leaving && atZero) {
+      // countdown reached 0
+      if (!leaving && next.hours === 0 && next.minutes === 0 && next.seconds === 0) {
         setLeaving(true);
-        // schedule removal after 5s
-        if (!timeoutRef.current) {
-          timeoutRef.current = setTimeout(() => {
-            if (onLeave) onLeave(item.id);
-            timeoutRef.current = null;
-          }, 5000);
+        if (typeof onLeave === "function") {
+          // remove from parent after 3s
+          setTimeout(() => onLeave(item.id), 3000);
         }
       }
     }, 1000);
-
-    return () => {
-      clearInterval(id);
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
-    };
+    return () => clearInterval(id);
   }, [item.delayedEpoch, leaving, onLeave, item.id]);
 
-  // status badge
-  const { badgeClass, statusText } = useMemo(() => {
-    if (leaving) {
-      return {
-        badgeClass: "border-[var(--color-neon)] text-[var(--color-neon)]",
-        statusText: "Leaving now",
-      };
-    }
-    if (item.delayMin > 0) {
-      return {
-        badgeClass: "border-[var(--color-magenta)] text-[var(--color-magenta)]",
-        statusText: `Delayed +${item.delayMin}m`,
-      };
-    }
-    return { badgeClass: "border-outline/60 text-subtext", statusText: "On time" };
-  }, [leaving, item.delayMin]);
+  // status
+  let statusIcon = "✅";
+  let statusText = "On time";
+  if (item.delayMin > 0) { statusIcon = "⚠️"; statusText = `Delayed +${item.delayMin}m`; }
+  if (leaving) { statusIcon = "⏱"; statusText = "Leaving now"; }
 
-  // icon by context (boarding icon for arrivals/boarding, departures for departures)
-  const ctxIcon = context === "departures" ? departuresIcon : boardingIcon;
-
-  // progress toward ETA (0–100) normalized to a 1h window
-  const progress = useMemo(() => {
-    const totalMs = 60 * 60 * 1000;
-    const msLeft = Math.max(0, (item.delayedEpoch ?? Date.now()) - Date.now());
-    return Math.min(100, Math.max(0, 100 - (msLeft / totalMs) * 100));
-  }, [item.delayedEpoch, timeLeft.seconds]); // tick once per second
-
-  const destMain = lang === "ja" ? item.destinationJP : item.destinationEN;
-  const destAlt  = lang === "ja" ? item.destinationEN : item.destinationJP;
+  // context icon
+  let ctxIcon = null;
+  if (context === "boarding") ctxIcon = boardingIcon;
+  if (context === "departures") ctxIcon = departuresIcon;
 
   return (
     <motion.div
       layout
-      className="card p-3 sm:p-4 flex flex-col gap-2 hover:shadow-[0_0_16px_rgba(0,209,255,.12)] transition-shadow"
+      initial={{ opacity: 0, x: 36 }}
+      animate={{
+        opacity: leaving ? 0.7 : 1,
+        x: 0,
+        filter: leaving ? "grayscale(20%)" : "none",
+      }}
+      exit={{ opacity: 0, x: -160, transition: { duration: 0.45 } }} // 👈 slide left on unmount
+      transition={{ duration: 0.35 }}
+      className="card p-3 sm:p-4 flex flex-col justify-between"
     >
-      {/* Header: line chip + destination + platform + context icon */}
-      <div className="flex items-center gap-2 min-w-0">
-        {/* line chip with color */}
-        <div
-          className="shrink-0 w-10 h-10 rounded-xl flex items-center justify-center border text-black"
-          style={{
-            background: item.lineColor || "var(--color-neon-cyan)",
-            borderColor: "color-mix(in oklab, #000 20%, transparent)",
-          }}
-          title={item.line}
-        >
-          <span className="font-display text-base">{item.lineCode}</span>
+      {/* Destination */}
+      <div className="flex items-center gap-2 mb-1">
+        <div className="shrink-0 w-10 h-10 rounded-2xl flex items-center justify-center bg-[var(--color-bg)] border border-outline shadow-[var(--shadow-innerhud)]">
+          <span className="font-display text-base text-[var(--color-neon-cyan)]">{item.lineCode}</span>
         </div>
 
-        {/* destination + line text */}
-        <div className="flex-1 min-w-0">
-          <div className="font-display text-lg text-neon flex items-center gap-2 min-w-0">
-            <span className="truncate max-w-[14ch] sm:max-w-[18ch]">{destMain}</span>
-            <span className="text-subtext truncate max-w-[16ch] sm:max-w-[20ch]">({destAlt})</span>
-            {ctxIcon && (
-              <span className="inline-flex w-25 h-25 shrink-0">
-                <img src={ctxIcon} alt={context} className="w-full h-full object-contain" />
-              </span>
-            )}
-          </div>
-          <div className="text-subtext text-xs sm:text-sm truncate">{item.line}</div>
+        <div className="font-display text-lg text-neon flex items-center gap-2">
+          {item.destinationJP} <span className="text-subtext">({item.destinationEN})</span>
+          {ctxIcon && (
+            <span className="inline-flex w-8 h-8">
+              <img src={ctxIcon} alt={context} className="w-full h-full object-contain" />
+            </span>
+          )}
         </div>
+      </div>
 
-        {/* platform chip */}
-        <div
-          className="px-2 py-1 rounded-lg text-xs border"
-          title={`Platform ${item.platform}`}
-          style={{ borderColor: "var(--color-outline)", color: "var(--color-text)" }}
-        >
-          番線 {item.platform}
-        </div>
+      <div className="text-subtext text-xs sm:text-sm mb-2">
+        {item.line} • Platform {item.platform}
       </div>
 
       {/* Time + status */}
-      <div className="flex items-end justify-between">
-        <div className="font-mono text-neon neon-text text-2xl sm:text-3xl">{item.eta}</div>
-        <div
-          className={`text-[10px] sm:text-xs px-2 py-[2px] rounded-lg border ${badgeClass}`}
-          aria-label={`Status: ${statusText}, time left ${timeLeft.label}`}
-        >
-          {statusText} • {timeLeft.label}
+      <div className="flex justify-between items-end">
+        <div className="font-mono text-2xl text-neon neon-text">{item.eta}</div>
+        <div className="text-xs text-subtext flex flex-col items-end tabular-nums">
+          <span>{statusIcon} {statusText}</span>
+          <span className="font-mono">{tl.label}</span>
         </div>
-      </div>
-
-      {/* progress to ETA */}
-      <div className="h-1 rounded bg-white/5 overflow-hidden" role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100}>
-        <div
-          className="h-full transition-[width] duration-700"
-          style={{ width: `${progress}%`, background: "var(--color-neon-cyan)" }}
-        />
       </div>
     </motion.div>
   );
 }
 
 function getTimeLeft(targetEpoch) {
-  const diff = Math.max(0, (targetEpoch ?? Date.now()) - Date.now());
+  const diff = Math.max(0, targetEpoch - Date.now());
   const hours = Math.floor(diff / 3_600_000);
   const minutes = Math.floor((diff % 3_600_000) / 60_000);
   const seconds = Math.floor((diff % 60_000) / 1000);
   const label =
-    `${hours.toString().padStart(2, "0")}:` +
-    `${minutes.toString().padStart(2, "0")}:` +
-    `${seconds.toString().padStart(2, "0")}`;
+    `${hours.toString().padStart(2,"0")}:`+
+    `${minutes.toString().padStart(2,"0")}:`+
+    `${seconds.toString().padStart(2,"0")}`;
   return { hours, minutes, seconds, label };
 }
