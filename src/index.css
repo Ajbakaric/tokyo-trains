@@ -21,14 +21,14 @@
   --shadow-neon: 0 0 8px #FFD300, 0 0 18px rgba(255,211,0,.35);
   --shadow-innerhud: inset 0 0 12px rgba(0,209,255,.15);
 
-  /* layout tokens */
-  --header-h: 40px; /* used by .chip-bar */
+  /* layout token */
+  --header-h: 40px;
 }
 
 /* ===== Base / layout ===== */
 html, body, #root { height: 100%; }
 
-/* Transparent body for Spline underlay */
+/* Transparent so the fixed video shows through */
 body {
   background: transparent;
   color: var(--color-text);
@@ -38,43 +38,25 @@ body {
 html, #root { background: #000; }
 
 /* ===== Stacking order =====
-   0) .hero-spline  (underlay)
-   1) .hud-grid     (UI container)
-   2) .hud-grid::before/::after (blueprint overlays)
-   3) header        (sticky controls)
-   4) .chip-bar     (sticky chips above header)
+   -1) .bg-video      (fixed underlay)
+    1) .hud-grid      (UI container)
+    2) .hud-grid::before/::after (blueprint overlays)
+    3) header         (sticky controls)
+    4) .chip-bar      (sticky chips above header)
 */
 
-/* 0) Spline underlay */
-.hero-spline {
-  position: sticky; /* or fixed per your setup */
-  top: 0;
-  z-index: 0;
-  height: clamp(560px, 35vh, 560px);
-  border-bottom: 6px solid var(--color-outline);
-  background: transparent;
-  overflow: hidden;
-  pointer-events: none; /* don't steal scroll/clicks */
-}
-.hero-spline iframe,
-.hero-spline canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: transparent !important;
-}
-
-/* 1) HUD container above Spline */
+/* 1) HUD container above underlay */
 .hud-grid {
   position: relative;
   z-index: 1;
 }
 
-/* 2) Blueprint overlays above Spline too */
+/* 2) Blueprint overlays */
 .hud-grid::before,
 .hud-grid::after {
   content: "";
-  position: fixed; inset: 0;
+  position: fixed;
+  inset: 0;
   pointer-events: none;
   z-index: 2;
 }
@@ -131,36 +113,65 @@ header {
 
 .dim-cancelled { opacity: .45; filter: grayscale(.1); }
 
-/* ===== Hero overlay FX (optional) ===== */
-:root { --hero-h: clamp(220px, 28vh, 360px); }
+/* ===== Fixed background video (stays behind while scrolling) ===== */
+.bg-video {
+  position: fixed;
+  inset: 0;
+  z-index: -1;          /* always under UI */
+  pointer-events: none; /* never block clicks/scroll */
+}
+.bg-video-el {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transform: translateY(-90px); /* 👈 shifts video up */
+  filter: saturate(1.05) contrast(1.02);
+}
 
-.hero-fx {
+.bg-video-fx {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(180deg, rgba(0,209,255,.08), transparent 55%),
+    linear-gradient(180deg, rgba(0,0,0,.35) 0%, transparent 30%, rgba(0,0,0,.25) 100%),
     radial-gradient(60% 60% at 50% 0%, rgba(255,0,168,.12), transparent 70%),
-    repeating-linear-gradient(
-      0deg,
-      rgba(255,255,255,.05),
-      rgba(255,255,255,.05) 1px,
-      transparent 2px,
-      transparent 6px
-    );
+    repeating-linear-gradient(0deg, rgba(255,255,255,.06), rgba(255,255,255,.06) 1px, transparent 2px, transparent 6px);
   mix-blend-mode: screen;
-  opacity: .5;
-}
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: end center;
-  padding-bottom: 18px;
-  pointer-events: none;
+  opacity: .55;
 }
 
-/* NOTE:
-   - Avoid transform/filter on ancestors of .hud-grid; they create new
-     stacking contexts. If unavoidable, ensure .hud-grid has a higher z-index.
-*/
+/* (Optional) sectional hero styles if you ever swap back from fixed video */
+.hero-video { position: relative; height: clamp(420px, 28vh, 360px); border-bottom: 1px solid var(--color-outline); overflow: hidden; background: transparent; z-index: 0; }
+.hero-video-el { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(1.05) contrast(1.02); }
+.hero-fx { position: absolute; inset: 0; pointer-events: none; background:
+  linear-gradient(180deg, rgba(0,209,255,.10), transparent 55%),
+  radial-gradient(60% 60% at 50% 0%, rgba(255,0,168,.15), transparent 70%),
+  repeating-linear-gradient(0deg, rgba(255,255,255,.06), rgba(255,255,255,.06) 1px, transparent 2px, transparent 6px);
+  mix-blend-mode: screen; opacity: .55; }
+.hero-overlay { position: absolute; inset: 0; display: grid; place-items: end center; padding-bottom: 18px; pointer-events: none; }
+/* ===== Hero intro section (reserves space at top) ===== */
+:root { --hero-h: clamp(420px, 28vh, 360px); }
+
+.hero-intro {
+  position: relative;
+  height: var(--hero-h);
+  z-index: 1;              /* above bg video (-1), below header (40) */
+  display: grid;
+  transform: translate(10);
+  background: transparent; /* keep transparent so video shows through */
+}
+
+.hero-intro-inner {
+  text-align: center;
+  padding: 12px 16px;
+  pointer-events: none;    /* purely decorative; remove if you add buttons */
+}
+
+.hero-intro-fade {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px; height: 42px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,.25) 100%);
+  pointer-events: none;
+  z-index: 1;
+}

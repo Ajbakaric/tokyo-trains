@@ -1,7 +1,5 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import boardingIcon from "../assets/boarding.png";
-import departuresIcon from "../assets/departures.png";
 
 export default function ArrivalCard({ item, onLeave, context = "arrivals" }) {
   const [tl, setTl] = useState(getTimeLeft(item.delayedEpoch));
@@ -13,12 +11,10 @@ export default function ArrivalCard({ item, onLeave, context = "arrivals" }) {
       const next = getTimeLeft(item.delayedEpoch);
       setTl(next);
 
-      // countdown reached 0
       if (!leaving && next.hours === 0 && next.minutes === 0 && next.seconds === 0) {
         setLeaving(true);
         if (typeof onLeave === "function") {
-          // remove from parent after 3s
-          setTimeout(() => onLeave(item.id), 3000);
+          setTimeout(() => onLeave(item.id), 3000); // remove after 3s
         }
       }
     }, 1000);
@@ -31,11 +27,6 @@ export default function ArrivalCard({ item, onLeave, context = "arrivals" }) {
   if (item.delayMin > 0) { statusIcon = "⚠️"; statusText = `Delayed +${item.delayMin}m`; }
   if (leaving) { statusIcon = "⏱"; statusText = "Leaving now"; }
 
-  // context icon
-  let ctxIcon = null;
-  if (context === "boarding") ctxIcon = boardingIcon;
-  if (context === "departures") ctxIcon = departuresIcon;
-
   return (
     <motion.div
       layout
@@ -45,7 +36,7 @@ export default function ArrivalCard({ item, onLeave, context = "arrivals" }) {
         x: 0,
         filter: leaving ? "grayscale(20%)" : "none",
       }}
-      exit={{ opacity: 0, x: -160, transition: { duration: 0.45 } }} // 👈 slide left on unmount
+      exit={{ opacity: 0, x: -160, transition: { duration: 0.45 } }}
       transition={{ duration: 0.35 }}
       className="card p-3 sm:p-4 flex flex-col justify-between"
     >
@@ -55,13 +46,8 @@ export default function ArrivalCard({ item, onLeave, context = "arrivals" }) {
           <span className="font-display text-base text-[var(--color-neon-cyan)]">{item.lineCode}</span>
         </div>
 
-        <div className="font-display text-lg text-neon flex items-center gap-2">
+        <div className="font-display text-lg text-neon">
           {item.destinationJP} <span className="text-subtext">({item.destinationEN})</span>
-          {ctxIcon && (
-            <span className="inline-flex w-8 h-8">
-              <img src={ctxIcon} alt={context} className="w-full h-full object-contain" />
-            </span>
-          )}
         </div>
       </div>
 
