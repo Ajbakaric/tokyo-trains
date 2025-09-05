@@ -8,7 +8,7 @@ export default function HeroIntro() {
         <h1 className="font-display text-3xl sm:text-4xl text-neon neon-text tracking-widest">
           東京メトロ
         </h1>
-        <p className="text-subtext text-lg sm:text-xl tracking-wide">
+        <p className="text-subtext text-lg sm:text-xl  tracking-wide">
           Live Tokyo transit board • Cyberpunk HUD
         </p>
       </div>

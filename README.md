@@ -1,12 +1,63 @@
-# React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Tokyo Cyberpunk TrainBoard
 
-Currently, two official plugins are available:
+A **futuristic arrivals & departures board** inspired by the Tokyo Metro.
+This project simulates live train arrivals, departures, and boarding with a **cyberpunk station board aesthetic**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## What it Does
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+* Shows **boarding, arrivals, and departures** in real time with live countdowns
+* Smooth **animations** for trains entering and leaving the board
+* **Video background** hero section for immersive atmosphere
+* Optional **station ambiance audio** (toggleable by the user)
+* Built with **React, Vite, Tailwind CSS, and Framer Motion**
+
+---
+
+## Setup Instructions
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/tokyo-trainboard.git
+cd tokyo-trainboard
+```
+
+### 2. Install dependencies
+
+```bash
+npm install
+```
+
+### 3. Start the local development server
+
+```bash
+npm run dev
+```
+
+The app will be available at:
+👉 [http://localhost:5173](http://localhost:5173)
+
+---
+
+## 📂 Project Structure
+
+```plaintext
+src/
+ ├── App.jsx                # Main app shell
+ ├── index.css              # Global styles & cyberpunk theme
+ ├── assets/                # Audio + video assets
+ ├── components/            # UI components (TrainBoard, HeroVideo, AudioToggle, etc.)
+ └── lib/                   # Utility functions (train simulator, time helpers)
+```
+
+---
+
+## 👤 Author
+
+**Austin Bakaric**
+
+* Self-taught software engineer
+* Exploring the intersection of **cyberpunk design + software**
